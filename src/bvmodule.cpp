@@ -51,7 +51,7 @@ namespace gpu_face {
             resized = gray;
         }
     }
-    void get_face(cv::Mat &image, cv::OutputArray &rect_matrix) {
+    void get_face(cv::Mat &image, cv::OutputArray &rect_matrix, double scaleRate=1.1) {
 	cout<<"doing something..."<<endl;
         if (getCudaEnabledDeviceCount() == 0) {
            cout << "No GPU found or the library is compiled without CUDA support" << endl;
@@ -69,8 +69,6 @@ namespace gpu_face {
             cout << "ERROR: Could not load cascade classifier \"" << cascadeName << "\"" << endl;
         }
         CV_Assert(!image.empty());
-        namedWindow("result", 1);
-
         Mat frame, frame_cpu, gray_cpu, resized_cpu, frameDisp;
         vector<Rect> faces;
 
@@ -81,8 +79,6 @@ namespace gpu_face {
         double scaleFactor = 1.0;
         bool findLargestObject = false;
         bool filterRects = true;
-        bool helpScreen = false;
-
         (image.empty() ? frame : image).copyTo(frame_cpu);
         frame_gpu.upload(image.empty() ? frame : image);
 
@@ -94,19 +90,14 @@ namespace gpu_face {
 
         if (useGPU) {
             cascade_gpu->setFindLargestObject(findLargestObject);
-            cascade_gpu->setScaleFactor(1.2);
+	    // Basically the setScaleFactor is used to create your scale pyramid. The smaller it is, the better and slower detector we get
+            cascade_gpu->setScaleFactor(scaleRate);
             cascade_gpu->setMinNeighbors((filterRects || findLargestObject) ? 4 : 0);
-
-            cascade_gpu->detectMultiScale(resized_gpu, rect_matrix);
-	    //rect_matrix = facesBuf_gpu;
+	    cascade_gpu->detectMultiScale(resized_gpu, facesBuf_gpu);
+	    facesBuf_gpu.download(rect_matrix);
             cascade_gpu->convert(facesBuf_gpu, faces);
         }
-	cv::Mat temp;
         for (size_t i = 0; i < faces.size(); ++i) {
-	    temp.at<int>(0, i) = faces[i].x;
-	    temp.at<int>(1, i) = faces[i].y;
-	    temp.at<int>(2, i) = faces[i].width;
-	    temp.at<int>(3, i) = faces[i].height;  
             rectangle(resized_cpu, faces[i], Scalar(255));
         }
 	//temp.copyTo(rect_matrix);
@@ -117,7 +108,6 @@ namespace gpu_face {
         //print detections to console
         cout << setfill(' ') << setprecision(2);
         cout << setw(6) << fixed << fps << " FPS, " << faces.size() << " det";
-        //rect_matrix = faces;
         if ((filterRects || findLargestObject) && !faces.empty()) {
             for (size_t i = 0; i < faces.size(); ++i) {
 
@@ -128,8 +118,5 @@ namespace gpu_face {
             }
         }
         cout << endl;
-        cv::cvtColor(resized_cpu, frameDisp, COLOR_GRAY2BGR);
-        imshow("result", frameDisp);
-
     }
 }

@@ -4,9 +4,9 @@ sys.path.append('build')
 import bv
 
 
-im = cv2.imread('/home/zack/Pictures/walkers.jpg', cv2.IMREAD_GRAYSCALE)
+im = cv2.imread('/home/zack/Pictures/people.jpg', cv2.IMREAD_GRAYSCALE)
 imfilled = im.copy()
-rects = bv.get_face(im)
+rects = bv.get_face(im,1.2)
 print(rects)
 
 
