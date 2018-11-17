@@ -51,7 +51,8 @@ namespace gpu_face {
             resized = gray;
         }
     }
-    void get_face(cv::Mat &image, cv::OutputArray rect_matrix) {
+    void get_face(cv::Mat &image, cv::OutputArray &rect_matrix) {
+	cout<<"doing something..."<<endl;
         if (getCudaEnabledDeviceCount() == 0) {
            cout << "No GPU found or the library is compiled without CUDA support" << endl;
         }
@@ -59,7 +60,7 @@ namespace gpu_face {
         cv::cuda::printShortCudaDeviceInfo(cv::cuda::getDevice());
         string cascadeName;
         
-        cascadeName = "/home/zack/datasets/cascade/face.xml";
+        cascadeName = "/home/zack/datasets/cascades/face.xml";
         
 
         Ptr<cuda::CascadeClassifier> cascade_gpu = cuda::CascadeClassifier::create(cascadeName);
@@ -96,14 +97,19 @@ namespace gpu_face {
             cascade_gpu->setScaleFactor(1.2);
             cascade_gpu->setMinNeighbors((filterRects || findLargestObject) ? 4 : 0);
 
-            cascade_gpu->detectMultiScale(resized_gpu, facesBuf_gpu);
+            cascade_gpu->detectMultiScale(resized_gpu, rect_matrix);
+	    //rect_matrix = facesBuf_gpu;
             cascade_gpu->convert(facesBuf_gpu, faces);
         }
-
+	cv::Mat temp;
         for (size_t i = 0; i < faces.size(); ++i) {
+	    temp.at<int>(0, i) = faces[i].x;
+	    temp.at<int>(1, i) = faces[i].y;
+	    temp.at<int>(2, i) = faces[i].width;
+	    temp.at<int>(3, i) = faces[i].height;  
             rectangle(resized_cpu, faces[i], Scalar(255));
         }
-
+	//temp.copyTo(rect_matrix);
         tm.stop();
         double detectionTime = tm.getTimeMilli();
         double fps = 1000 / detectionTime;
