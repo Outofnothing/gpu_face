@@ -908,6 +908,7 @@ PyObject* PYOPENCV_FROM(const String& value)
 }
 
 template<>
+
 bool PYOPENCV_TO(PyObject* obj, String& value, const char* name)
 {
     (void)name;
