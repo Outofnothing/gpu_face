@@ -3,14 +3,14 @@ opencv提供了CUDA的C++接口，却没有python 接口，如果想要在python
 
 这个项目参照了[这篇教程][link]。
 [link]:https://www.learnopencv.com/how-to-convert-your-opencv-c-code-into-a-python-module/
-### 安装要求
+## 安装要求
 > CUDA
 >
 > Python3.5 
 > 
 > OpenCV3.4.X(built with CUDA)
 
-### 如何编译：
+## 如何编译：
 
 ```
 python3 gen2.py pybv build headers.txt
@@ -26,7 +26,17 @@ bv.cpp src/bvmodule.cpp \
 -I . -I/home/zack/.local/lib/python3.5/site-packages/numpy/core/include \
 -o build/bv.so
 ```
-### 注意事项：
+
+## 测试
+使用bvtest.py 进行测试
+
+##  如何使用
+```
+cd build
+ln bv.so ~/venvs/tf/lib/python3.5/site-packages/
+```
+需要创建硬链接，软链接不起作用，链接所在位置根据你自己的情况自行调整
+## 注意事项：
 - 编译opencv时如果其安装位置不在/usr/local位置，则需要ldconfig来将其链接
    ```
    ldconfig /path/to/your/opencv/lib
