@@ -16,6 +16,7 @@ opencv提供了CUDA的C++接口，却没有python 接口，如果想要在python
 python3 gen2.py pybv build headers.txt
 ```
 
+
 ```
 g++ -shared -rdynamic -g -O3 -Wall -fPIC -std=c++11 \
 bv.cpp src/bvmodule.cpp \
